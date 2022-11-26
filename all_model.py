@@ -229,18 +229,18 @@ class CreatedModels():
                     "columns":feature_selection,
                     "parameter":feature
                 })
-    def extra_tree_classifier(self,X,y,start,end):
+    def extra_tree_classifier(self,X,y,start,end,parms):
 
         Listing=[]
 
         preprocessor=self.data_preprocessor(X,y)
         # st.write("In main FUnction ")
         xtrain,xtest,ytrain,ytest=train_test_split(X,y,test_size=0.2,random_state=45)
-        parms={
-        "classifier__max_features":["sqrt", "log2", None],    
-        'classifier__criterion':["gini", "entropy", "log_loss"],
-        'classifier__max_depth':[10,15,20,25,30],
-    }
+    #     parms={
+    #     "classifier__max_features":["sqrt", "log2", None],    
+    #     'classifier__criterion':["gini", "entropy", "log_loss"],
+    #     'classifier__max_depth':[10,15,20,25,30],
+    # }
         for i in range(start,end):
             # ****************Feature Seclortot**********************************************
                     feature_selector = Pipeline(

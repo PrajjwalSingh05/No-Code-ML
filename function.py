@@ -112,11 +112,11 @@ class all_function(CreatedModels,Defaul_model,download_model):
                 
     def interface_randomforest_classifier(self):
            """It Genarte an interface for Random Forest Classifier """
-           with st.form("Form1"):
+           with st.form("RandomForestClassfierForm"):
                 parms={}
                 criterion=["criterion"]
                 max_depth_list=["max_depth"]
-                n_estimator_list=["n_estimator"]
+                n_estimator_list=["n_estimators"]
                 max_features=["max_features"]
                 min_samples_split_list=["min_samples_split"]
                 file = st.file_uploader("Upload an image",type=["csv","xlsx"])
@@ -139,10 +139,10 @@ class all_function(CreatedModels,Defaul_model,download_model):
                     x=data.drop(columns=prediction_column)
                     le=LabelEncoder()
                     criterion=criterion+criterion_list
-                    max_features=max_features+max_depth_list
+                    max_features=max_features+max_features_list
                     for i in range(1,n_estimator,5):
                           n_estimator_list.append(i)
-                    for i in range(1,min_samples_split,5):
+                    for i in range(1,min_samples_split,1):
                           min_samples_split_list.append(i)
                     self.creating_hyper_paramerter(parms,min_samples_split_list)
                     self.creating_hyper_paramerter(parms,n_estimator_list)
@@ -155,30 +155,50 @@ class all_function(CreatedModels,Defaul_model,download_model):
                     y=le.fit_transform(data[prediction_column])
                     if self.parameter_checkup(input_col,maxcol,x,y):
                             # st.write("inside if function")
-                         self.random_forest_classifier(x,y,1,input_col)
+                         self.random_forest_classifier(x,y,1,input_col,parms)
     def interface_ExtraTreeClassifier(self):
            """It Genarte an interface for ExtraTreeClassifier """
-           with st.form("Form1"):
-            
+           with st.form("ExtraTreeClassifierForm"):
+                parms={}
                 file = st.file_uploader("Upload an image",type=["csv","xlsx"])
                 prediction_column=st.text_input("Enter predictiion")
                 st.write(prediction_column)
                 input_col=st.slider ("Number of input",3,1000)
-                
+                criterion=["criterion"]
+                max_depth_list=["max_depth"]
+                # n_estimator_list=["n_estimator"]
+                max_features=["max_features"]
+                max_features_list=st.multiselect("Choose a max_features",["auto", "sqrt", "log2"])
+                min_samples_split_list=["min_samples_split"]
+                criterion_list=st.multiselect("Choose a Criterion",["gini","entropy","log_loss"])
+                max_depth=st.slider("Input Max Depth " ,min_value=1,max_value=1000)
+                min_samples_split=st.slider("Input Sample Split ",min_value=3,max_value=50)
                 submit = st.form_submit_button("Submit")
                 if submit:
                     if file is None:
                         st.warning("Please Upload a file")
-
-
                     data=self.data_extract(file)
                     maxcol=data.shape[1]-2
                     x=data.drop(columns=prediction_column)
                     le=LabelEncoder()
                     y=le.fit_transform(data[prediction_column])
+                    criterion=criterion+criterion_list
+                    max_features=max_features+max_features_list
+                    # for i in range(1,n_estimator,5):
+                    #       n_estimator_list.append(i)
+                    for i in range(1,min_samples_split,1):
+                          min_samples_split_list.append(i)
+                    self.creating_hyper_paramerter(parms,min_samples_split_list)
+                    # self.creating_hyper_paramerter(parms,n_estimator_list)
+                    self.creating_hyper_paramerter(parms,max_features)
+                          
+                          
+                    # self.creating_hyper_paramerter(parms,criterion)
+                    self.creating_hyper_paramerter(parms,criterion)
+
                     if self.parameter_checkup(input_col,maxcol,x,y):
                        
-                        self.extra_tree_classifier(x,y,1,input_col)
+                        self.extra_tree_classifier(x,y,1,input_col,parms)
     def creating_hyper_paramerter(self,parms,column):
                 try:
                     parms["classifier__"+column[0]]=column[1:]
@@ -301,6 +321,30 @@ class all_function(CreatedModels,Defaul_model,download_model):
                     if self.parameter_checkup(input_col,maxcol,x,y):
              
                          self.random_forest_regression(x,y,1,input_col,parms)
+    def interfacr_deafult_classifier(self):
+          with st.form("Form1"):               
+# ***********************************************Uploading File***************************************************************
+                file = st.file_uploader("Upload an image",type=["csv","xlsx"])
+                prediction_column=st.text_input("Enter predictiion")
+                st.write(prediction_column)
+                input_col=st.slider ("Number of input",3,1000)
+# ***********************************************Creating Ctiterion Parameter***************************************************************
+                model=st.selectbox("choose your model",("RandomForestClassifier","ExtraTreeClassifier"))
+                self.model_name=model
+                submit = st.form_submit_button("Submit")
+#  **********************************Clicking On submit button Parameter***************************************************************
+                if submit:
+                    if file is None:
+                        st.warning("Please Upload a file")
+                    data=self.data_extract(file)
+                    maxcol=data.shape[1]-2
+                    st.write("Inside extretree")
+                    
+                    x=data.drop(columns=prediction_column)
+                    le=LabelEncoder()
+                    y=le.fit_transform(data[prediction_column])
+                    if self.parameter_checkup(input_col,maxcol,x,y):
+                        self.default_model_classifier(x,y,1,input_col,model)
     def interface_deafult_regressor(self):
                with st.form("Form1"):               
 # ***********************************************Uploading File***************************************************************
@@ -322,55 +366,64 @@ class all_function(CreatedModels,Defaul_model,download_model):
                     x=data.drop(columns=prediction_column)
                     y=data[prediction_column]
                     if self.parameter_checkup(input_col,maxcol,x,y):
-                        self.default_model(x,y,1,input_col,model)
+                        self.default_model_regression(x,y,1,input_col,model)
 # ***********************************************Updating criterion list***************************************************************
-    def interface_custom_download_model(self):
-                options=["RandomForestRegressor","ExtraTreeRegressor"]
-                model=st.selectbox("choose your model",options)
-            # model_interface=st.button("First select the model")
-            # if model_interface:
-                if model==options[0]:
-                # if model=="RandomForestRegressor":
-                    self.download_interface_random_forest_regression()
-                    print("Random freest download complete")
-                    print("Random freest download complete")
-                    print("Random freest download complete")
-                    print("Random freest download complete")
-                elif model=="ExtraTreeRegressor":
-                    st.write("ExtraTreeRegressor")
-                #   self.interface_random_forest_regression()
-        #   with st.form("Form1"):               
-        #     file = st.file_uploader("Upload an image",type=["csv","xlsx"])
-        #     prediction_column=st.text_input("Enter predictiion")
-        #     submit = st.form_submit_button("Submit")
-        #     if submit:
-        #                 if file is None:
-        #                     st.warning("Please Upload a file")
-        #                 data=self.data_extract(file)
-        #                 maxcol=data.shape[1]-2
-        #                 st.write("Inside custom downlaod model")
-        #                 x=data.drop(columns=prediction_column)
-        #                 y=data[prediction_column]
+    # def interface_custom_download_model(self,Chosen_model):
+    #             # options=["RandomForestRegressor","ExtraTreeRegressor"]
+    #             # model=st.selectbox("choose your model",options)
+    #         # model_interface=st.button("First select the model")
+    #         # if model_interface:
+    #             # if model==options[0]:
+    #             if Chosen_model=="RandomForestRegressor":
+    #                 self.download_interface_random_forest_regression()
+    #                 print("Random freest download complete")
+    #                 print("Random freest download complete")
+    #                 print("Random freest download complete")
+    #                 print("Random freest download complete")
+    #             elif Chosen_model=="ExtraTreeRegressor":
+    #                 st.write("ExtraTreeRegressor")
+    #             #   self.interface_random_forest_regression()
+    #     #   with st.form("Form1"):               
+    #     #     file = st.file_uploader("Upload an image",type=["csv","xlsx"])
+    #     #     prediction_column=st.text_input("Enter predictiion")
+    #     #     submit = st.form_submit_button("Submit")
+    #     #     if submit:
+    #     #                 if file is None:
+    #     #                     st.warning("Please Upload a file")
+    #     #                 data=self.data_extract(file)
+    #     #                 maxcol=data.shape[1]-2
+    #     #                 st.write("Inside custom downlaod model")
+    #     #                 x=data.drop(columns=prediction_column)
+    #     #                 y=data[prediction_column]
                     
     def execute(self):
         data_options = ["none",'regression',"Classifier",]
 
         sidebar = st.sidebar
         sidebar.title("Download your custom model")
-        customdownload=sidebar.selectbox("choose your model",("None","RandomForestRegressor","ExtraTreeRegressor"))
+        download_option=["None","RandomForestRegressor","ExtraTreeRegressor","RandomForestClassfier","ExtraTreeClassfier"]
+        customdownload=sidebar.selectbox("choose your model",download_option)
         # customdownload=sidebar.button("Download")
-        if customdownload=="RandomForestRegressor":
+        if customdownload==download_option[1]:
               print("Gone forward")
               print("Gone forward")
               print("Gone forward")
               print("Gone forward")
               print("Gone forward")
               print("Gone forward")
-              self.interface_custom_download_model()
+            #   self.interface_custom_download_model(customdownload)
+              self.download_interface_random_forest_regression()
               print("Gone backfffffd")
               print("Gone backfffffd")
               print("Gone backfffffd")
               print("Gone backfffffd")
+        elif customdownload==download_option[2]:
+            #   self.interface_custom_download_model()
+              self.download_interface_ExtraTreeRegressor()
+        elif customdownload==download_option[3]:
+              self.download_interface_randomforest_classifier()
+        elif customdownload==download_option[4]:
+              self.download_interface_ExtraTreeClassifier()
         sidebar.title('Select Data Type  ')
 
         selOptionmodel = sidebar.selectbox("Select an Option", data_options)
@@ -397,9 +450,11 @@ class all_function(CreatedModels,Defaul_model,download_model):
             #    st.write("Inside Opention 1")
                selOptionmodel=self.slidebar(model_options)
             #    selOptionmodel = sidebar.selectbox("Select an Option",options)
-               if selOptionmodel==model_options[1]:
+               if selOptionmodel==model_options[0]:
+                     self.interfacr_deafult_classifier()
+               elif selOptionmodel==model_options[1]:
                     self.interface_randomforest_classifier()
-               if selOptionmodel==model_options[2]:
+               elif selOptionmodel==model_options[2]:
                     self.interface_ExtraTreeClassifier()
                     # data=self.formmaker()
                     # x=data.drop(columns=prediction_column)

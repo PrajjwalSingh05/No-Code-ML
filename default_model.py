@@ -34,6 +34,7 @@ from all_model import *
 class Defaul_model:
     def __init__(self) :
          model_name=""
+         model_file=""
     def data_preprocessor(self,X,y):
         """Function to Prepocess the data """
         numeric_transformer = Pipeline(
@@ -48,15 +49,113 @@ class Defaul_model:
                 ]
             )
         return preprocessor
-   
-    def default_model(self,X,y,start,end,model):
+    def default_model_classifier(self,X,y,start,end,model):
+        Listing=[]
+        preprocessor= self.data_preprocessor(X,y)
+        xtrain,xtest,ytrain,ytest=train_test_split(X,y,test_size=0.2,random_state=45)
+        for i in range(start,end):
+        # ****************Feature Seclortot**********************************************
+                if self.model_name=="RandomForestClassifier":
+                    model_selector = Pipeline(
+                                steps=[("preprocessor", preprocessor),
+                                ("feature", SelectKBest(f_regression,k=i)),
+                                ("classifier", RandomForestClassifier())]
+                            )
+                    parms={
+                "classifier__n_estimators":[100,150,200,250,270,300],
+                "classifier__criterion":["gini", "entropy", "log_loss"],
+                'classifier__min_samples_split':[1,2,3,4,5,7,8,9,10],
+                'classifier__max_features':["sqrt", "log2", None],
+                         
+                    }
+                elif self.model_name=="ExtraTreeClassifier":
+                    parms={
+                "classifier__splitter":["random", "best"],
+                "classifier__max_features":["sqrt", "log2", "auto"],
+                'classifier__max_depth':[10,15,20,25,30],
+            } 
+                    model_selector = Pipeline(
+                            steps=[("preprocessor", preprocessor),
+                            ("feature", SelectKBest(f_regression,k=i)),
+                            ("classifier", ExtraTreeClassifier())]
+                        )
+                else:
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    print("Not working deafult model")
+                    st.write("No modek qorking")
+                    st.write("No modek qorking")
+                    st.write("No modek qorking")
+                    st.write("No modek qorking")
+                    st.write("No modek qorking")
+                    st.write("No modek qorking")
+                feature_selector = Pipeline(
+                    steps=[("preprocessor", preprocessor),
+                    ("feature", SelectKBest(f_regression,k=i))])
+                feature_selector.fit(xtrain,ytrain)
+        # ****************Model Seclortot**********************************************
+                # model_selector = Pipeline(
+                #     steps=[("preprocessor", preprocessor),
+                #     ("feature", SelectKBest(f_regression,k=i)),
+                #     ("classifier", RandomForestRegressor())]
+                # )
+                model_selector.fit(xtrain,ytrain)
+        # *********************************Hyper Parametet***********************************
+                grid=GridSearchCV(model_selector,parms,cv=4,n_jobs=-1,verbose=3)
+                grid.fit(xtrain,ytrain)
+                feature=grid.best_params_
+                model=grid.best_estimator_
+                # ypred_model=model.predict(xtest)
+                # result_model=r2_score(ytest,ypred_model)
+                st.markdown("_"*200)
+                # st.write(f"Accuracy with best parameter{result_model}")
+                # print(f"R2score of Result Modelwith best estimator is : {result_model}")
+        #****************************Result Generation ******************************
+                ypred=model_selector.predict(xtest)
+                print(confusion_matrix(ypred,ytest))
+                print(classification_report(ypred,ytest))
+                st.write("Confusion Matrix is :")
+                st.write(confusion_matrix(ypred,ytest))
+                st.write("CLassification Report is :")
+                st.write(classification_report(ypred,ytest))
+            
+        #*********************************Working on features****************************
+                xopt=feature_selector.get_feature_names_out()
+                feature_selection=[]
+                for x in xopt:
+                    feature_selection.append(x.split("__")[1])
+            
+                st.write("The feature Selection are as follow-:")
+                st.write(feature_selection)
+                st.write("Hypre Paramerter are as follow-:")
+                st.write(feature)
+                # print(feature_selection)
+                # st.write("************************")
+                # print(f"***********************--{i}******************")
+                # print("**********new********************")
+
+        # ********************Colecting Data--***********************************************
+                Listing.append({
+                    "i":i,
+                    # "Error":result,
+                    # "Error_model":result_model,
+                    "columns":feature_selection,
+                    "parameter":feature
+                })
+         
+    def default_model_regression(self,X,y,start,end,model):
         Listing=[]
         preprocessor= self.data_preprocessor(X,y)
         xtrain,xtest,ytrain,ytest=train_test_split(X,y,test_size=0.2,random_state=45)
     
         for i in range(start,end):
         # ****************Feature Seclortot**********************************************
-                if self.model=="RandomForestRegressor":
+                if self.model_name=="RandomForestRegressor":
                     model_selector = Pipeline(
                                 steps=[("preprocessor", preprocessor),
                                 ("feature", SelectKBest(f_regression,k=i)),
