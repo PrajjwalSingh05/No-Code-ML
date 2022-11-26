@@ -30,7 +30,7 @@ from sklearn.metrics import confusion_matrix,classification_report
 # *************************************************User defined CLass**************
 from function import *
 from all_model import *
-st.header("No Code AI")
+st.header("No Code Machine Learning System")
 
 options = ['Project Introduction', 'Execution']
 
